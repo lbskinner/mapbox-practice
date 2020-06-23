@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
 import mapboxgl from "mapbox-gl";
+import Chart from "chart.js";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -51,10 +52,38 @@ class App extends React.Component {
 
       this.map.on("click", "kc-neighborhoods", (event) => {
         console.log(event.features[0].properties);
+        const mapData = event.features[0].properties;
         new mapboxgl.Popup()
           .setLngLat(event.lngLat)
-          .setHTML(event.features[0].properties.id)
+          .setHTML('<canvas id="myChart" width="400" height="400"></canvas>')
+          .setMaxWidth("300px")
           .addTo(this.map);
+        const ctx = document.getElementById("myChart");
+        const myChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
+            datasets: [
+              {
+                label: `${mapData.shid}`,
+                data: [
+                  mapData["pop-commute-drive_alone"],
+                  mapData["pop-commute-drive_carpool"],
+                  mapData["pop-commute-public_transit"],
+                  mapData["pop-commute-walk"],
+                ],
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.2)",
+                  "rgba(54, 162, 235, 0.2)",
+                  "rgba(255, 206, 86, 0.2)",
+                  "rgba(75, 192, 192, 0.2)",
+                  "rgba(153, 102, 255, 0.2)",
+                  "rgba(255, 159, 64, 0.2)",
+                ],
+              },
+            ],
+          },
+        });
       });
 
       // Change the cursor to a pointer when the mouse is over the kc-neighborhoods layer
