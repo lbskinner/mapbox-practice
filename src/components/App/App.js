@@ -49,6 +49,14 @@ class App extends React.Component {
         },
       });
 
+      this.map.on("click", "kc-neighborhoods", (event) => {
+        console.log(event.features[0].properties);
+        new mapboxgl.Popup()
+          .setLngLat(event.lngLat)
+          .setHTML(event.features[0].properties.id)
+          .addTo(this.map);
+      });
+
       // Change the cursor to a pointer when the mouse is over the kc-neighborhoods layer
       this.map.on("mouseenter", "kc-neighborhoods", () => {
         this.map.getCanvas().style.cursor = "pointer";
