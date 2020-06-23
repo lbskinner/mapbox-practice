@@ -26,13 +26,15 @@ class App extends React.Component {
         zoom: this.state.viewpoint.zoom,
       });
     }
-
+    // when the map is load
     this.map.on("load", () => {
+      // get/fetch GeoJSON raw file for kc-neighborhoods
       this.map.addSource("kc-neighborhoods", {
         type: "geojson",
         data:
           "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-neighborhoods.json",
       });
+      // add layer to the map
       this.map.addLayer({
         id: "kc-neighborhoods",
         type: "fill",
@@ -46,11 +48,24 @@ class App extends React.Component {
           "fill-opacity": 0.5,
         },
       });
+
+      // Change the cursor to a pointer when the mouse is over the kc-neighborhoods layer
+      this.map.on("mouseenter", "kc-neighborhoods", () => {
+        this.map.getCanvas().style.cursor = "pointer";
+      });
+
+      // Change it back to a pointer when it leaves the kc-neighborhoods layer
+      this.map.on("mouseleave", "kc-neighborhoods", () => {
+        this.map.getCanvas().style.cursor = "";
+      });
+
+      // get/fetch GeoJSON raw file for kc-tracts
       this.map.addSource("kc-tracts", {
         type: "geojson",
         data:
           "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-tracts.json",
       });
+      // add layer to the map
       this.map.addLayer({
         id: "kc-tracts",
         type: "fill",
@@ -63,6 +78,15 @@ class App extends React.Component {
           "fill-color": "#f03b20",
           "fill-opacity": 0.5,
         },
+      });
+      // Change the cursor to a pointer when the mouse is over the kc-tracts layer
+      this.map.on("mouseenter", "kc-tracts", () => {
+        this.map.getCanvas().style.cursor = "pointer";
+      });
+
+      // Change it back to a pointer when it leaves the kc-tracts layer
+      this.map.on("mouseleave", "kc-tracts", () => {
+        this.map.getCanvas().style.cursor = "";
       });
     });
   }
