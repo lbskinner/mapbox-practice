@@ -27,106 +27,158 @@ class App extends React.Component {
         zoom: this.state.viewpoint.zoom,
       });
     }
-    // when the map is load
-    this.map.on("load", () => {
-      // get/fetch GeoJSON raw file for kc-neighborhoods
-      this.map.addSource("kc-neighborhoods", {
-        type: "geojson",
-        data:
-          "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-neighborhoods.json",
-      });
-      // add layer to the map
-      this.map.addLayer({
-        id: "kc-neighborhoods",
-        type: "fill",
-        source: "kc-neighborhoods",
-        layout: {
-          // make layer visible by default
-          visibility: "visible",
-        },
-        paint: {
-          "fill-color": "#088",
-          "fill-opacity": 0.5,
-        },
-      });
+    // when the map is loaded, add the neighborhood layer to map
+    this.map.on("load", this.loadNeighborhoodsLayer);
+    // when the map is loaded, add the tracts layer to map
+    this.map.on("load", this.loadTractsLayer);
+  }
 
-      this.map.on("click", "kc-neighborhoods", (event) => {
-        console.log(event.features[0].properties);
-        const mapData = event.features[0].properties;
-        new mapboxgl.Popup()
-          .setLngLat(event.lngLat)
-          .setHTML('<canvas id="myChart" width="400" height="400"></canvas>')
-          .setMaxWidth("300px")
-          .addTo(this.map);
-        const ctx = document.getElementById("myChart");
-        const myChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
-            datasets: [
-              {
-                label: `${mapData.shid}`,
-                data: [
-                  mapData["pop-commute-drive_alone"],
-                  mapData["pop-commute-drive_carpool"],
-                  mapData["pop-commute-public_transit"],
-                  mapData["pop-commute-walk"],
-                ],
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.2)",
-                  "rgba(54, 162, 235, 0.2)",
-                  "rgba(255, 206, 86, 0.2)",
-                  "rgba(75, 192, 192, 0.2)",
-                  "rgba(153, 102, 255, 0.2)",
-                  "rgba(255, 159, 64, 0.2)",
-                ],
-              },
-            ],
+  loadNeighborhoodsLayer = () => {
+    // get/fetch GeoJSON raw file for kc-neighborhoods
+    this.map.addSource("kc-neighborhoods", {
+      type: "geojson",
+      data:
+        "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-neighborhoods.json",
+    });
+    // add layer to the map
+    this.map.addLayer({
+      id: "kc-neighborhoods",
+      type: "fill",
+      source: "kc-neighborhoods",
+      layout: {
+        // make layer visible by default
+        visibility: "visible",
+      },
+      paint: {
+        "fill-color": "#088",
+        "fill-opacity": 0.5,
+      },
+    });
+
+    // when click on the neighborhoods layer, shown a popup with bar chart to display commuter data for the area
+    this.map.on("click", "kc-neighborhoods", (event) => {
+      console.log(event.features[0].properties);
+      const mapData = event.features[0].properties;
+      new mapboxgl.Popup()
+        .setLngLat(event.lngLat)
+        .setHTML('<canvas id="myChart" width="400" height="400"></canvas>')
+        .setMaxWidth("300px")
+        .addTo(this.map);
+      const ctx = document.getElementById("myChart");
+      const myChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
+          datasets: [
+            {
+              label: "Commuter Population",
+              data: [
+                mapData["pop-commute-drive_alone"],
+                mapData["pop-commute-drive_carpool"],
+                mapData["pop-commute-public_transit"],
+                mapData["pop-commute-walk"],
+              ],
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.2)",
+                "rgba(54, 162, 235, 0.2)",
+                "rgba(255, 206, 86, 0.2)",
+                "rgba(75, 192, 192, 0.2)",
+                "rgba(153, 102, 255, 0.2)",
+                "rgba(255, 159, 64, 0.2)",
+              ],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            position: "top",
+            text: `${mapData.shid}`,
           },
-        });
-      });
-
-      // Change the cursor to a pointer when the mouse is over the kc-neighborhoods layer
-      this.map.on("mouseenter", "kc-neighborhoods", () => {
-        this.map.getCanvas().style.cursor = "pointer";
-      });
-
-      // Change it back to a pointer when it leaves the kc-neighborhoods layer
-      this.map.on("mouseleave", "kc-neighborhoods", () => {
-        this.map.getCanvas().style.cursor = "";
-      });
-
-      // get/fetch GeoJSON raw file for kc-tracts
-      this.map.addSource("kc-tracts", {
-        type: "geojson",
-        data:
-          "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-tracts.json",
-      });
-      // add layer to the map
-      this.map.addLayer({
-        id: "kc-tracts",
-        type: "fill",
-        source: "kc-tracts",
-        layout: {
-          // make layer visible by default
-          visibility: "visible",
         },
-        paint: {
-          "fill-color": "#f03b20",
-          "fill-opacity": 0.5,
-        },
-      });
-      // Change the cursor to a pointer when the mouse is over the kc-tracts layer
-      this.map.on("mouseenter", "kc-tracts", () => {
-        this.map.getCanvas().style.cursor = "pointer";
-      });
-
-      // Change it back to a pointer when it leaves the kc-tracts layer
-      this.map.on("mouseleave", "kc-tracts", () => {
-        this.map.getCanvas().style.cursor = "";
       });
     });
-  }
+
+    // Change the cursor to a pointer when the mouse is over the kc-neighborhoods layer
+    this.map.on("mouseenter", "kc-neighborhoods", () => {
+      this.map.getCanvas().style.cursor = "pointer";
+    });
+
+    // Change it back to a pointer when it leaves the kc-neighborhoods layer
+    this.map.on("mouseleave", "kc-neighborhoods", () => {
+      this.map.getCanvas().style.cursor = "";
+    });
+  };
+
+  loadTractsLayer = () => {
+    // get/fetch GeoJSON raw file for kc-tracts
+    this.map.addSource("kc-tracts", {
+      type: "geojson",
+      data:
+        "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-tracts.json",
+    });
+    // add layer to the map
+    this.map.addLayer({
+      id: "kc-tracts",
+      type: "fill",
+      source: "kc-tracts",
+      layout: {
+        // make layer visible by default
+        visibility: "visible",
+      },
+      paint: {
+        "fill-color": "#f03b20",
+        "fill-opacity": 0.5,
+      },
+    });
+
+    // // when click on the tracts layer, shown a popup with bar chart to display commuter data for the area
+    // this.map.on("click", "kc-tracts", (event) => {
+    //   console.log(event.features[0].properties);
+    //   const mapData = event.features[0].properties;
+    //   new mapboxgl.Popup()
+    //     .setLngLat(event.lngLat)
+    //     .setHTML('<canvas id="myChart" width="400" height="400"></canvas>')
+    //     .setMaxWidth("300px")
+    //     .addTo(this.map);
+    //   const ctx = document.getElementById("myChart");
+    //   const myChart = new Chart(ctx, {
+    //     type: "bar",
+    //     data: {
+    //       labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
+    //       datasets: [
+    //         {
+    //           label: `${mapData.shid}`,
+    //           data: [
+    //             mapData["pop-commute-drive_alone"],
+    //             mapData["pop-commute-drive_carpool"],
+    //             mapData["pop-commute-public_transit"],
+    //             mapData["pop-commute-walk"],
+    //           ],
+    //           backgroundColor: [
+    //             "rgba(255, 99, 132, 0.2)",
+    //             "rgba(54, 162, 235, 0.2)",
+    //             "rgba(255, 206, 86, 0.2)",
+    //             "rgba(75, 192, 192, 0.2)",
+    //             "rgba(153, 102, 255, 0.2)",
+    //             "rgba(255, 159, 64, 0.2)",
+    //           ],
+    //         },
+    //       ],
+    //     },
+    //   });
+    // });
+
+    // Change the cursor to a pointer when the mouse is over the kc-tracts layer
+    this.map.on("mouseenter", "kc-tracts", () => {
+      this.map.getCanvas().style.cursor = "pointer";
+    });
+
+    // Change it back to a pointer when it leaves the kc-tracts layer
+    this.map.on("mouseleave", "kc-tracts", () => {
+      this.map.getCanvas().style.cursor = "";
+    });
+  };
 
   toggleNeighborhoodsLayer = () => {
     let visibility = this.map.getLayoutProperty(
