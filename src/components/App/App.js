@@ -161,13 +161,15 @@ class App extends React.Component {
         <nav className="menu">
           <button
             onClick={(event) => this.toggleLayers(event, neighborhoodId)}
-            className={this.state.neighborhoodsLayerClass}
+            className={
+              this.state.neighborhoodsLayerClass + "neighborhood_background"
+            }
           >
             Neighborhoods
           </button>
           <button
             onClick={(event) => this.toggleLayers(event, tractId)}
-            className={this.state.tractsLayerClass}
+            className={this.state.tractsLayerClass + "tract_background"}
           >
             Tracts
           </button>
