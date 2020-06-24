@@ -17,6 +17,7 @@ class App extends React.Component {
   };
 
   map = null;
+  popup = null;
 
   componentDidMount() {
     if (this.map === null) {
@@ -57,9 +58,12 @@ class App extends React.Component {
 
     // when click on the neighborhoods layer, shown a popup with bar chart to display commuter data for the area
     this.map.on("click", "kc-neighborhoods", (event) => {
+      if (this.popup !== null) {
+        this.popup.remove();
+      }
       console.log(event.features[0].properties);
       const mapData = event.features[0].properties;
-      new mapboxgl.Popup()
+      this.popup = new mapboxgl.Popup()
         .setLngLat(event.lngLat)
         .setHTML('<canvas id="myChart" width="400" height="400"></canvas>')
         .setMaxWidth("300px")
@@ -181,6 +185,9 @@ class App extends React.Component {
   };
 
   toggleNeighborhoodsLayer = () => {
+    if (this.popup !== null) {
+      this.popup.remove();
+    }
     let visibility = this.map.getLayoutProperty(
       "kc-neighborhoods",
       "visibility"
