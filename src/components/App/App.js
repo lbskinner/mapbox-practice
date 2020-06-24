@@ -5,6 +5,9 @@ import Chart from "chart.js";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
+const neighborhoodId = "kc-neighborhoods";
+const tractId = "kc-tracts";
+
 class App extends React.Component {
   state = {
     neighborhoodsLayerClass: "",
@@ -29,20 +32,35 @@ class App extends React.Component {
         zoom: 9,
       });
     }
-    this.map.on("load", this.loadNeighborhoodsLayer);
-    this.map.on("load", this.loadTractsLayer);
+    // this.map.on("load", this.loadNeighborhoodsLayer);
+    // this.map.on("load", this.loadTractsLayer);
+    this.map.on("load", () => {
+      this.loadNeighborhoodsLayer();
+      this.loadTractsLayer();
+    });
+
+    [neighborhoodId, tractId].forEach((layerId) => {
+      this.map.on("mouseenter", layerId, () => {
+        this.map.getCanvas().style.cursor = "pointer";
+      });
+
+      this.map.on("mouseleave", layerId, () => {
+        this.map.getCanvas().style.cursor = "";
+      });
+      this.map.on("click", layerId, this.displayPopupChart);
+    });
   }
 
   loadNeighborhoodsLayer = () => {
-    this.map.addSource("kc-neighborhoods", {
+    this.map.addSource(neighborhoodId, {
       type: "geojson",
       data:
         "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-neighborhoods.json",
     });
     this.map.addLayer({
-      id: "kc-neighborhoods",
+      id: neighborhoodId,
       type: "fill",
-      source: "kc-neighborhoods",
+      source: neighborhoodId,
       layout: {
         visibility: "visible",
       },
@@ -51,67 +69,18 @@ class App extends React.Component {
         "fill-opacity": 0.5,
       },
     });
-
-    this.map.on("click", "kc-neighborhoods", (event) => {
-      this.removePopup();
-      const mapData = event.features[0].properties;
-      this.popup = new mapboxgl.Popup()
-        .setLngLat(event.lngLat)
-        .setHTML('<canvas id="myChart" width="300px" height="250px"></canvas>')
-        .setMaxWidth("300px")
-        .addTo(this.map);
-      const ctx = document.getElementById("myChart");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
-          datasets: [
-            {
-              label: "Commuter Population",
-              data: [
-                mapData["pop-commute-drive_alone"],
-                mapData["pop-commute-drive_carpool"],
-                mapData["pop-commute-public_transit"],
-                mapData["pop-commute-walk"],
-              ],
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.2)",
-                "rgba(54, 162, 235, 0.2)",
-                "rgba(255, 206, 86, 0.2)",
-                "rgba(75, 192, 192, 0.2)",
-              ],
-            },
-          ],
-        },
-        options: {
-          title: {
-            display: true,
-            position: "top",
-            text: `${mapData.shid}`,
-          },
-        },
-      });
-    });
-
-    this.map.on("mouseenter", "kc-neighborhoods", () => {
-      this.map.getCanvas().style.cursor = "pointer";
-    });
-
-    this.map.on("mouseleave", "kc-neighborhoods", () => {
-      this.map.getCanvas().style.cursor = "";
-    });
   };
 
   loadTractsLayer = () => {
-    this.map.addSource("kc-tracts", {
+    this.map.addSource(tractId, {
       type: "geojson",
       data:
         "https://raw.githubusercontent.com/mysidewalk/interview/master/frontend-engineer/kc-tracts.json",
     });
     this.map.addLayer({
-      id: "kc-tracts",
+      id: tractId,
       type: "fill",
-      source: "kc-tracts",
+      source: tractId,
       layout: {
         visibility: "visible",
       },
@@ -120,61 +89,53 @@ class App extends React.Component {
         "fill-opacity": 0.5,
       },
     });
+  };
 
-    this.map.on("click", "kc-tracts", (event) => {
-      this.removePopup();
-      const mapData = event.features[0].properties;
-      this.popup = new mapboxgl.Popup()
-        .setLngLat(event.lngLat)
-        .setHTML('<canvas id="myChart" width="300px" height="250px"></canvas>')
-        .setMaxWidth("300px")
-        .addTo(this.map);
-      const ctx = document.getElementById("myChart");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
-          datasets: [
-            {
-              label: "Commuter Population",
-              data: [
-                mapData["pop-commute-drive_alone"],
-                mapData["pop-commute-drive_carpool"],
-                mapData["pop-commute-public_transit"],
-                mapData["pop-commute-walk"],
-              ],
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.2)",
-                "rgba(54, 162, 235, 0.2)",
-                "rgba(255, 206, 86, 0.2)",
-                "rgba(75, 192, 192, 0.2)",
-              ],
-            },
-          ],
-        },
-        options: {
-          title: {
-            display: true,
-            position: "top",
-            text: `${mapData.shid}`,
+  displayPopupChart = (event) => {
+    this.removePopup();
+    const mapData = event.features[0].properties;
+    this.popup = new mapboxgl.Popup()
+      .setLngLat(event.lngLat)
+      .setHTML('<canvas id="myChart" width="300px" height="250px"></canvas>')
+      .setMaxWidth("300px")
+      .addTo(this.map);
+    const ctx = document.getElementById("myChart");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Drive Alone", "Carpool", "Public Transit", "Walk"],
+        datasets: [
+          {
+            label: "Commuter Population",
+            data: [
+              mapData["pop-commute-drive_alone"],
+              mapData["pop-commute-drive_carpool"],
+              mapData["pop-commute-public_transit"],
+              mapData["pop-commute-walk"],
+            ],
+            backgroundColor: [
+              "rgba(255, 99, 132, 0.2)",
+              "rgba(54, 162, 235, 0.2)",
+              "rgba(255, 206, 86, 0.2)",
+              "rgba(75, 192, 192, 0.2)",
+            ],
           },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          position: "top",
+          text: `${mapData.shid}`,
         },
-      });
-    });
-
-    this.map.on("mouseenter", "kc-tracts", () => {
-      this.map.getCanvas().style.cursor = "pointer";
-    });
-
-    this.map.on("mouseleave", "kc-tracts", () => {
-      this.map.getCanvas().style.cursor = "";
+      },
     });
   };
 
   toggleLayers = (event, layerId) => {
     this.removePopup();
     let statePropertyKey = "neighborhoodsLayerClass";
-    if (layerId === "kc-tracts") {
+    if (layerId === tractId) {
       statePropertyKey = "tractsLayerClass";
     }
     const visibility = this.map.getLayoutProperty(layerId, "visibility");
@@ -199,13 +160,13 @@ class App extends React.Component {
       <div id="map">
         <nav className="menu">
           <button
-            onClick={(event) => this.toggleLayers(event, "kc-neighborhoods")}
+            onClick={(event) => this.toggleLayers(event, neighborhoodId)}
             className={this.state.neighborhoodsLayerClass}
           >
             Neighborhoods
           </button>
           <button
-            onClick={(event) => this.toggleLayers(event, "kc-tracts")}
+            onClick={(event) => this.toggleLayers(event, tractId)}
             className={this.state.tractsLayerClass}
           >
             Tracts
