@@ -3,7 +3,7 @@ import "./App.css";
 import mapboxgl from "mapbox-gl";
 import Chart from "chart.js";
 
-// mapbox token included in .env file is my person public token
+// mapbox token included in .env file is my personal public token
 // will reset token after assessment has been reviewed
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
