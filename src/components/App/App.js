@@ -3,6 +3,8 @@ import "./App.css";
 import mapboxgl from "mapbox-gl";
 import Chart from "chart.js";
 
+// mapbox token included in .env file is my person public token
+// will reset token after assessment has been reviewed
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const neighborhoodId = "kc-neighborhoods";
@@ -32,8 +34,7 @@ class App extends React.Component {
         zoom: 9,
       });
     }
-    // this.map.on("load", this.loadNeighborhoodsLayer);
-    // this.map.on("load", this.loadTractsLayer);
+
     this.map.on("load", () => {
       this.loadNeighborhoodsLayer();
       this.loadTractsLayer();
